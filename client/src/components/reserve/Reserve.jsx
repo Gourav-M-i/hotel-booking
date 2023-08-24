@@ -4,6 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleXmark } from '@fortawesome/free-solid-svg-icons'
 import useFetch from '../../hooks/useFetch'
 import { SearchContext } from '../../context/SearchContext'
+import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 const Reserve = ({ setOpen, hotelId }) => {
     const [selectedRooms, setSelectedRooms] = useState([])
     const { data, loading, error } = useFetch(`/api/hotels/room/${hotelId}`)
@@ -21,10 +23,13 @@ const Reserve = ({ setOpen, hotelId }) => {
         return list
     }
 
-    const allDates= getDatesInRange(dates[0].startDate, dates[0].endDate)
+    const allDates = getDatesInRange(dates[0].startDate, dates[0].endDate)
 
-    const isAvailable=(roomNumber)=>{
-        
+    const isAvailable = (roomNumber) => {
+        const isFound = roomNumber.unavailableDates.some(date =>
+            allDates.includes(new Date(date).getTime()))
+
+        return !isFound
     }
 
     const handleSelect = (e) => {
@@ -33,9 +38,20 @@ const Reserve = ({ setOpen, hotelId }) => {
         setSelectedRooms(checked ? [...selectedRooms, value] : selectedRooms.filter(item => item !== value))
     }
 
-    const handleClick = () => [
+    const navigate = useNavigate()
 
-    ]
+    const handleClick = async () => {
+        try {
+            await Promise.all(selectedRooms.map(roomId => {
+                const res = axios.put(`/api/rooms/availability/${roomId}`, { dates: allDates })
+                return res.data
+            }))
+            setOpen(false)
+            navigate('/')
+        } catch (err) {
+
+        }
+    }
 
     return (
         <div className='reserve'>
@@ -50,11 +66,11 @@ const Reserve = ({ setOpen, hotelId }) => {
                             <div className='rMax'>Max people:<b>{item.maxPeople}</b></div>
                             <div className='rPrice'>{item.price}</div>
                         </div>
-                        <div className='room'>
+                        <div className='rSelectRooms'>
                             {item.roomNumbers.map(roomNumber => (
-                                <div>
+                                <div className='room'>
                                     <label>{roomNumber.number}</label>
-                                    <input type='checkbox' value={roomNumber._id} onChange={handleSelect} />
+                                    <input type='checkbox' value={roomNumber._id} onChange={handleSelect} disabled={!isAvailable(roomNumber)} />
                                 </div>
                             ))}
                         </div>
