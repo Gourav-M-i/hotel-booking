@@ -2,7 +2,7 @@ import React from 'react'
 import './Featured.css'
 import useFetch from '../../hooks/useFetch'
 const Featured = () => {
-    const { data, loading, error, reFetch } = useFetch("/api/hotels/countByCity?cities=India,England")
+    const { data, loading, error, reFetch } = useFetch("http://localhost:8800/api/hotels/countByCity?cities=India,England")
     return (
         <div className='featured'>
             {loading ? "loading please wait" : <>

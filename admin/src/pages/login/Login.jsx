@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react'
-import './Login.css'
-import { AuthContext } from '../../context/AythContext'
+import './Login.scss'
+import { AuthContext } from '../../context/AuthContext'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
@@ -27,8 +27,14 @@ const Login = () => {
                 withCredentials: true
             }
             const response = await axios.post("http://localhost:8800/api/auth/login", credentials, config)
-            dispatch({ type: "LOGIN_SUCCESS", payload: response.data.details })
-            navigate("/")
+            console.log(response, credentials)
+            if (response.data.isAdmin) {
+                dispatch({ type: "LOGIN_SUCCESS", payload: response.data.details })
+                navigate("/")
+            }
+            else {
+                dispatch({ type: "LOGIN_FAILURE", payload: { message: "You are not allowed" } })
+            }
         }
         catch (err) {
             dispatch({ type: "LOGIN_FAILURE", payload: err.response.data })

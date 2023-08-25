@@ -22,8 +22,15 @@ const connect = async () => {
 
 //middlewares
 app.use(cookieParser())
-app.use(cors())
+const corsOptions = {
+    origin: true, //included origin as true
+    credentials: true, //included credentials as true
+};
+
+app.use(cors(corsOptions));
+// app.use(cors())
 app.use(express.json())
+
 
 app.use("/api/auth", authRoute)
 app.use("/api/users", usersRoute)
